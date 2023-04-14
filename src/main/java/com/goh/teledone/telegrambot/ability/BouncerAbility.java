@@ -13,6 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 import javax.annotation.PostConstruct;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 @Component
 @RequiredArgsConstructor
@@ -36,8 +37,15 @@ public class BouncerAbility implements AbilityExtension {
         );
 
         return Reply.of(action,
-                bouncerService::isForbidToUseBot
+                bouncerService::isForbidToUseBot,
+                Predicate.not(isCallbackQuery())
         );
+    }
+
+    private Predicate<Update> isCallbackQuery() {
+        return update -> update != null
+                && update.getCallbackQuery() != null
+                && update.getCallbackQuery().getId() != null;
     }
 
 }

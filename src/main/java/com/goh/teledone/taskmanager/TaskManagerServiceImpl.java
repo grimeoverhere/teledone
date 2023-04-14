@@ -16,7 +16,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import static com.goh.teledone.taskmanager.TaskListType.*;
+import static com.goh.teledone.taskmanager.TaskListType.INBOX;
+import static com.goh.teledone.taskmanager.TaskListType.TODAY;
 
 @Slf4j
 @Service
@@ -52,23 +53,13 @@ public class TaskManagerServiceImpl implements TaskManagerService {
     }
 
     @Override
-    public List<Task> getAllTasks() {
-        return allTasks();
+    public List<Task> getTasks(TaskListType taskListType) {
+        return taskList(taskListType);
     }
 
     @Override
-    public void moveToday(Long taskId) {
-        moveTask(taskId, TODAY);
-    }
-
-    @Override
-    public void moveThisWeek(Long taskId) {
-        moveTask(taskId, WEEK);
-    }
-
-    @Override
-    public void moveBacklog(Long taskId) {
-        moveTask(taskId, BACKLOG);
+    public void move(Long taskId, TaskListType taskListType) {
+        moveTask(taskId, taskListType);
     }
 
     private void moveTask(Long taskId, TaskListType to) {
