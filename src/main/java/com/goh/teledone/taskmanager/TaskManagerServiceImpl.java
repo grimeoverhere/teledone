@@ -6,10 +6,12 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import one.util.streamex.StreamEx;
+import org.eclipse.collections.impl.block.comparator.primitive.LongFunctionComparator;
 import org.springframework.stereotype.Service;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -27,15 +29,23 @@ public class TaskManagerServiceImpl implements TaskManagerService {
     private static final String MOVE_LOG = "Move a task with id={} from {} to {}.";
     private static final String MOVE_TRY_LOG = "Tried to move a task with id={} from {} to {}. But there is no task with this id.";
 
-    private final AtomicLong identifier = new AtomicLong(0L); //todo:: as variable in DBContext
+    private final AtomicLong identifier = new AtomicLong(0L);
 
     @NonNull
     private TeledoneAbilityBot teledoneBot;
+
+    @PostConstruct
+    public void init() {
+        allTasks().stream().max(new LongFunctionComparator<>(Task::getId))
+                .map(Task::getId)
+                .ifPresent(identifier::set);
+    }
 
     @Override
     public Long saveInbox(String text) {
         var newTaskId = identifier.incrementAndGet();
         taskList(INBOX).add(Task.builder().title(text).id(newTaskId).build());
+        teledoneBot.db().commit();
         return newTaskId;
     }
 
@@ -43,13 +53,8 @@ public class TaskManagerServiceImpl implements TaskManagerService {
     public Long saveInboxFromVoice(String text, String telegramFileId) {
         var newTaskId = identifier.incrementAndGet();
         taskList(INBOX).add(Task.builder().title(text).fileId(telegramFileId).id(newTaskId).build());
+        teledoneBot.db().commit();
         return newTaskId;
-    }
-
-
-    @Override
-    public List<Task> getInbox() {
-        return taskList(INBOX);
     }
 
     @Override
@@ -70,6 +75,7 @@ public class TaskManagerServiceImpl implements TaskManagerService {
             log.info(MOVE_LOG, taskId, null, TODAY);
             taskList(from).remove(task);
             taskList(to).add(task);
+            teledoneBot.db().commit();
         } else {
             log.info(MOVE_TRY_LOG, taskId, null, TODAY);
         }
