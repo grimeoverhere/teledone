@@ -78,7 +78,7 @@ public class TaskToTelegramMessageConverter {
                         inlineKeyboardButton(task.getId(), TODAY),
                         inlineKeyboardButton(task.getId(), WEEK),
                         inlineKeyboardButton(task.getId(), BACKLOG),
-                        new InlineKeyboardButton() {{ setText("✅"); setCallbackData(asJson(new TaskMovementDTO(task.getId(), DONE)));}}
+                        new InlineKeyboardButton() {{ setText("\uD83D\uDD30"); setCallbackData(asJson(new TaskMovementDTO(task.getId(), DONE)));}}
                 )).build();
     }
 
