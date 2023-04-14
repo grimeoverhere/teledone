@@ -1,0 +1,19 @@
+server:
+  port: ${APP_PORT:9091}
+
+integration:
+  telegram:
+    bot-token: ???
+    bot-creator-id: ???
+    bot-username: ???
+  vk:
+    app-id: ${VK_APP_ID:???}
+    client-secret: ${VK_CLIENT_SECRET:???}
+    service-access-key: ${VK_SERVICE_ACCESS_KEY:???}
+    stt-poll-interval: 3000
+
+
+
+logging.level:
+  raw-inboud-data: INFO
+  raw-outbound-data: INFO
