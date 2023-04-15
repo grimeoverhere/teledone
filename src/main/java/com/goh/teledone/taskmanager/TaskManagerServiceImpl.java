@@ -11,11 +11,9 @@ import org.springframework.stereotype.Service;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
-import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import static com.goh.teledone.taskmanager.TaskListType.INBOX;
@@ -29,61 +27,52 @@ public class TaskManagerServiceImpl implements TaskManagerService {
     private static final String MOVE_LOG = "Move a task with id={} from {} to {}.";
     private static final String MOVE_TRY_LOG = "Tried to move a task with id={} from {} to {}. But there is no task with this id.";
 
-    private final AtomicLong identifier = new AtomicLong(0L);
-
     @NonNull
     private TeledoneAbilityBot teledoneBot;
 
-    @PostConstruct
-    public void init() {
-        allTasks().stream().max(new LongFunctionComparator<>(Task::getId))
-                .map(Task::getId)
-                .ifPresent(identifier::set);
-    }
-
     @Override
-    public Long saveInbox(String text) {
-        var newTaskId = identifier.incrementAndGet();
-        taskList(INBOX).add(Task.builder().title(text).id(newTaskId).build());
+    public Long saveInbox(Long chatId, String text) {
+        var newTaskId = lastTaskId(chatId) + 1;
+        taskList(chatId, INBOX).add(Task.builder().title(text).id(newTaskId).build());
         teledoneBot.db().commit();
         return newTaskId;
     }
 
     @Override
-    public Long saveInboxFromVoice(String text, String telegramFileId) {
-        var newTaskId = identifier.incrementAndGet();
-        taskList(INBOX).add(Task.builder().title(text).fileId(telegramFileId).id(newTaskId).build());
+    public Long saveInboxFromVoice(Long chatId, String text, String telegramFileId) {
+        var newTaskId = lastTaskId(chatId) + 1;
+        taskList(chatId, INBOX).add(Task.builder().title(text).fileId(telegramFileId).id(newTaskId).build());
         teledoneBot.db().commit();
         return newTaskId;
     }
 
     @Override
-    public List<Task> getTasks(TaskListType taskListType) {
-        return taskList(taskListType);
+    public List<Task> getTasks(Long chatId, TaskListType taskListType) {
+        return taskList(chatId, taskListType);
     }
 
     @Override
-    public void move(Long taskId, TaskListType taskListType) {
-        moveTask(taskId, taskListType);
+    public void move(Long chatId, Long taskId, TaskListType taskListType) {
+        moveTask(chatId, taskId, taskListType);
     }
 
-    private void moveTask(Long taskId, TaskListType to) {
-        var tup = findTask(taskId);
+    private void moveTask(Long chatId, Long taskId, TaskListType to) {
+        var tup = findTask(chatId, taskId);
         if (tup.isPresent()) {
             var from = tup.get().getT1();
             var task = tup.get().getT2();
             log.info(MOVE_LOG, taskId, null, TODAY);
-            taskList(from).remove(task);
-            taskList(to).add(task);
+            taskList(chatId, from).remove(task);
+            taskList(chatId, to).add(task);
             teledoneBot.db().commit();
         } else {
             log.info(MOVE_TRY_LOG, taskId, null, TODAY);
         }
     }
 
-    private Optional<Tuple2<TaskListType, Task>> findTask(Long taskId) {
+    private Optional<Tuple2<TaskListType, Task>> findTask(Long chatId, Long taskId) {
         return StreamEx.of(TaskListType.stream())
-                .map(type -> Tuples.of(type, taskList(type)))
+                .map(type -> Tuples.of(type, taskList(chatId, type)))
                 .filter(tup -> tup.getT2().stream().anyMatch(task -> task.getId().equals(taskId)))
                 .map(tup -> {
                     Optional<Task> foundTask = tup.getT2().stream()
@@ -95,15 +84,24 @@ public class TaskManagerServiceImpl implements TaskManagerService {
                 .findAny();
     }
 
-    private List<Task> allTasks() {
+    private Long lastTaskId(Long chatId) {
+        return allTasks(chatId).stream().max(new LongFunctionComparator<>(Task::getId))
+                .map(Task::getId)
+                .orElse(0L);
+    }
+
+    private List<Task> allTasks(Long chatId) {
         return TaskListType.stream()
-                .map(this::taskList)
+                .map(taskListType -> taskList(chatId, taskListType))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
 
-    private List<Task> taskList(TaskListType type) {
-        return teledoneBot.db().getList(type.name());
+    private String name(Long chatId, TaskListType type) {
+        return type.name() + "_"  +chatId;
+    }
+    private List<Task> taskList(Long chatId, TaskListType type) {
+        return teledoneBot.db().getList(name(chatId, type));
     }
 
 }

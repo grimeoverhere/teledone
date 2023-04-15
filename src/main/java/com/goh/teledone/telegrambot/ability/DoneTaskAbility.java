@@ -39,7 +39,7 @@ public class DoneTaskAbility extends WorkWithTaskAbility {
 
     @Override
     protected void getAction(MessageContext ctx) {
-        Flux.fromStream(taskManager.getTasks(getTaskListType()).stream())
+        Flux.fromStream(taskManager.getTasks(ctx.chatId(), getTaskListType()).stream())
                 .publishOn(Schedulers.boundedElastic())
                 .subscribe(task -> {
                     try {

@@ -46,7 +46,7 @@ public class InboxTaskAbility extends WorkWithTaskAbility {
         BiConsumer<BaseAbilityBot, Update> action = (bot, upd) -> Mono.just(upd)
                 .publishOn(Schedulers.boundedElastic())
                 .map(actionWrapper::processMessage)
-                .map(voiceToText -> Tuples.of(taskManager.saveInboxFromVoice(voiceToText, upd.getMessage().getVoice().getFileId()), voiceToText))
+                .map(voiceToText -> Tuples.of(taskManager.saveInboxFromVoice(AbilityUtils.getChatId(upd), voiceToText, upd.getMessage().getVoice().getFileId()), voiceToText))
                 .map(tup -> {
                     var voiceToText = tup.getT2();
                     SendMessage sendMessage = new SendMessage();
@@ -66,7 +66,7 @@ public class InboxTaskAbility extends WorkWithTaskAbility {
     public Reply saveAnyMessageToTask() {
         BiConsumer<BaseAbilityBot, Update> action = (bot, upd) -> Mono.just(upd)
                 .publishOn(Schedulers.boundedElastic())
-                .map(update -> taskManager.saveInbox(update.getMessage().getText()))
+                .map(update -> taskManager.saveInbox(AbilityUtils.getChatId(update), update.getMessage().getText()))
                 .map(taskId -> {
                     SendMessage sendMessage = new SendMessage();
                     sendMessage.setChatId(AbilityUtils.getChatId(upd));

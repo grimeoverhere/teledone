@@ -54,7 +54,7 @@ public class HandleTaskCallbackQueryAbility implements AbilityExtension {
                     TaskMovementDTO taskMovementDTO = converter.fromJson(callbackQuery.getData(), TaskMovementDTO.class);
                     return Tuples.of(callbackQuery, taskMovementDTO);
                 })
-                .doOnNext(tup -> taskManager.move(tup.getT2().taskId(), tup.getT2().taskListType()))
+                .doOnNext(tup -> taskManager.move(AbilityUtils.getChatId(upd), tup.getT2().taskId(), tup.getT2().taskListType()))
                 .doOnNext(tup -> {
                     AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery(tup.getT1().getId());
                     answerCallbackQuery.setShowAlert(true);

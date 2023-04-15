@@ -19,6 +19,7 @@ public class BouncerService {
         allowedIds.add(237135484L); //me
         allowedIds.add(640569888L); //my anime tyan
         allowedIds.add(2026924825L); // my working account
+        allowedIds.add(236368989L); // Yura
     }
 
     public boolean isAllowedToUseBot(Update update) {
