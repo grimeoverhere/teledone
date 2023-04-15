@@ -11,4 +11,4 @@ TeleDone is inspired by Maxdone app, yet another one GTD app.
 4. Webapp interface
 5. Checklist for task
 6. 'how to run' guide in README.md
-7. Switch from VK STT to Yandex Speechkit
+7. Switch from VK STT to Yandex Speechkit: https://cloud.yandex.ru/docs/speechkit/stt/
