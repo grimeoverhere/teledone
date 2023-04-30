@@ -2,21 +2,23 @@ package com.goh.teledone.taskmanager;
 
 import lombok.Getter;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import static com.goh.teledone.taskmanager.TaskAction.*;
 
 @Getter
 public enum TaskListType {
-    INBOX(MOVE_TODAY, MOVE_TO_THIS_WEEK, MOVE_TO_BACKLOG, MARK_DONE, EDIT, DELETE),
-    TODAY(MOVE_TO_THIS_WEEK, MOVE_TO_BACKLOG, MARK_DONE, EDIT, DELETE),
-    WEEK(MOVE_TODAY, MOVE_TO_BACKLOG, MARK_DONE, EDIT, DELETE),
-    BACKLOG(MOVE_TODAY, MOVE_TO_THIS_WEEK, MARK_DONE, EDIT, DELETE),
-    DONE(MOVE_TODAY, MOVE_TO_THIS_WEEK, MOVE_TO_BACKLOG, DELETE);
+    INBOX(List.of(MOVE_TODAY, MOVE_TO_THIS_WEEK, MOVE_TO_BACKLOG), List.of(MARK_DONE, EDIT, DELETE)),
+    TODAY(List.of(MOVE_TO_THIS_WEEK, MOVE_TO_BACKLOG), List.of(MARK_DONE, EDIT, DELETE)),
+    WEEK(List.of(MOVE_TODAY, MOVE_TO_BACKLOG), List.of(MARK_DONE, EDIT, DELETE)),
+    BACKLOG(List.of(MOVE_TODAY, MOVE_TO_THIS_WEEK), List.of(MARK_DONE, EDIT, DELETE)),
+    DONE(List.of(MOVE_TODAY, MOVE_TO_THIS_WEEK, MOVE_TO_BACKLOG), List.of(DELETE));
 
-    private final TaskAction[] availableActions;
+    private final List<TaskAction>[] availableActions;
 
-    TaskListType(TaskAction... actions) {
+    @SafeVarargs
+    TaskListType(List<TaskAction>... actions) {
         this.availableActions = actions;
     }
 

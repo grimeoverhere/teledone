@@ -20,7 +20,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.goh.teledone.Utils.escapeForTelegramMarkdownV2;
@@ -75,11 +74,9 @@ public class TaskToTelegramMessageConverter {
     }
 
     private InlineKeyboardMarkup inlineKeyboardMarkupForTask(Task task, TaskListType taskListType) {
-        int buttonAmountPerRow = 3;
         var taskActions = Arrays.asList(taskListType.getAvailableActions());
 
-        var actions = IntStream.range(0, (taskListType.getAvailableActions().length + buttonAmountPerRow - 1) / buttonAmountPerRow)
-                .mapToObj(i -> taskActions.subList(i * buttonAmountPerRow, Math.min(buttonAmountPerRow * (i + 1), taskActions.size())))
+        var actions = taskActions.stream()
                 .map(actionsRow -> convertActionsToActionButtons(task, actionsRow))
                 .collect(Collectors.toList());
 

@@ -81,7 +81,9 @@ public class TaskManagerServiceImpl implements TaskManagerService {
         if (tup.isPresent()) {
             var from = tup.get().getT1();
             var task = tup.get().getT2();
+            taskList(chatId, from).remove(task);
             task.setTitle(text);
+            taskList(chatId, from).add(task);
             log.info(EDIT_TASK_LOG, taskId, from);
             teledoneBot.db().commit();
         } else {
