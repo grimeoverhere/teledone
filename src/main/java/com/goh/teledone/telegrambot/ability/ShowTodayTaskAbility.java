@@ -11,12 +11,12 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 
 @Component
-public class BacklogTaskAbility extends WorkWithTaskAbility {
+public class ShowTodayTaskAbility extends ShowTaskListAbility {
 
-    public BacklogTaskAbility(@NonNull TaskManagerService taskManager,
-                              @NonNull TeledoneAbilityBot abilityBot,
-                              @NonNull BouncerService bouncerService,
-                              @NonNull TaskToTelegramMessageConverter converter) {
+    public ShowTodayTaskAbility(@NonNull TaskManagerService taskManager,
+                                @NonNull TeledoneAbilityBot abilityBot,
+                                @NonNull BouncerService bouncerService,
+                                @NonNull TaskToTelegramMessageConverter converter) {
         super(taskManager, abilityBot, bouncerService, converter);
     }
 
@@ -28,7 +28,7 @@ public class BacklogTaskAbility extends WorkWithTaskAbility {
 
     @Override
     protected TaskListType getTaskListType() {
-        return TaskListType.BACKLOG;
+        return TaskListType.TODAY;
     }
 
 }

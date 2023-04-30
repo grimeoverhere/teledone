@@ -17,12 +17,12 @@ import reactor.core.scheduler.Schedulers;
 import javax.annotation.PostConstruct;
 
 @Component
-public class DoneTaskAbility extends WorkWithTaskAbility {
+public class ShowDoneTaskAbility extends ShowTaskListAbility {
 
-    public DoneTaskAbility(@NonNull TaskManagerService taskManager,
-                           @NonNull TeledoneAbilityBot abilityBot,
-                           @NonNull BouncerService bouncerService,
-                           @NonNull TaskToTelegramMessageConverter converter) {
+    public ShowDoneTaskAbility(@NonNull TaskManagerService taskManager,
+                               @NonNull TeledoneAbilityBot abilityBot,
+                               @NonNull BouncerService bouncerService,
+                               @NonNull TaskToTelegramMessageConverter converter) {
         super(taskManager, abilityBot, bouncerService, converter);
     }
 

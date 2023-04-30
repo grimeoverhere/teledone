@@ -23,7 +23,7 @@ import static org.telegram.abilitybots.api.objects.Locality.ALL;
 import static org.telegram.abilitybots.api.objects.Privacy.PUBLIC;
 
 @RequiredArgsConstructor
-public abstract class WorkWithTaskAbility implements AbilityExtension {
+public abstract class ShowTaskListAbility implements AbilityExtension {
 
     @NonNull
     protected TaskManagerService taskManager;
@@ -61,9 +61,9 @@ public abstract class WorkWithTaskAbility implements AbilityExtension {
                 .subscribe(task -> {
                     try {
                         if (StringUtils.hasLength(task.getFileId())) {
-                            abilityBot.execute(converter.convertTaskToSendVoice(task, AbilityUtils.getChatId(ctx.update())));
+                            abilityBot.execute(converter.convertTaskToSendVoice(task, AbilityUtils.getChatId(ctx.update()), getTaskListType()));
                         } else {
-                            abilityBot.execute(converter.convertTaskToSendMessage(task, AbilityUtils.getChatId(ctx.update())));
+                            abilityBot.execute(converter.convertTaskToSendMessage(task, AbilityUtils.getChatId(ctx.update()), getTaskListType()));
                         }
                     } catch (TelegramApiException e) {
                         throw new RuntimeException(e);

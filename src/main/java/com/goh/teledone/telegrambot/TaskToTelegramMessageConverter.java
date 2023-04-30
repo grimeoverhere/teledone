@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.goh.teledone.model.TaskMovementDTO;
+import com.goh.teledone.taskmanager.TaskAction;
 import com.goh.teledone.taskmanager.TaskListType;
 import com.goh.teledone.taskmanager.model.Task;
 import lombok.SneakyThrows;
@@ -16,12 +17,13 @@ import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.goh.teledone.Utils.escapeForTelegramMarkdownV2;
-import static com.goh.teledone.taskmanager.TaskListType.*;
-import static com.goh.teledone.taskmanager.TaskListType.BACKLOG;
 
 @Service
 public class TaskToTelegramMessageConverter {
@@ -37,9 +39,9 @@ public class TaskToTelegramMessageConverter {
             *Tittle:* %s
             """;
 
-    public SendVoice convertTaskToSendVoice(Task task, Long chatId) {
+    public SendVoice convertTaskToSendVoice(Task task, Long chatId, TaskListType taskListType) {
         SendVoice sendVoice = convertTaskToSendVoiceWithoutKeyboard(task, chatId);
-        sendVoice.setReplyMarkup(inlineKeyboardMarkupForTask(task));
+        sendVoice.setReplyMarkup(inlineKeyboardMarkupForTask(task, taskListType));
         return sendVoice;
     }
 
@@ -55,9 +57,9 @@ public class TaskToTelegramMessageConverter {
         return sendVoice;
     }
 
-    public SendMessage convertTaskToSendMessage(Task task, Long chatId) {
+    public SendMessage convertTaskToSendMessage(Task task, Long chatId, TaskListType taskListType) {
         SendMessage sendMessage = convertTaskToSendMessageWithoutKeyboard(task, chatId);
-        sendMessage.setReplyMarkup(inlineKeyboardMarkupForTask(task));
+        sendMessage.setReplyMarkup(inlineKeyboardMarkupForTask(task, taskListType));
         return sendMessage;
     }
     public SendMessage convertTaskToSendMessageWithoutKeyboard(Task task, Long chatId) {
@@ -72,21 +74,29 @@ public class TaskToTelegramMessageConverter {
         return sendMessage;
     }
 
-    private InlineKeyboardMarkup inlineKeyboardMarkupForTask(Task task) {
-        return InlineKeyboardMarkup.builder()
-                .keyboardRow(List.of(
-                        inlineKeyboardButton(task.getId(), TODAY),
-                        inlineKeyboardButton(task.getId(), WEEK),
-                        inlineKeyboardButton(task.getId(), BACKLOG),
-                        new InlineKeyboardButton() {{ setText("\uD83D\uDD30"); setCallbackData(asJson(new TaskMovementDTO(task.getId(), DONE)));}}
-                )).build();
+    private InlineKeyboardMarkup inlineKeyboardMarkupForTask(Task task, TaskListType taskListType) {
+        int buttonAmountPerRow = 3;
+        var taskActions = Arrays.asList(taskListType.getAvailableActions());
+
+        var actions = IntStream.range(0, (taskListType.getAvailableActions().length + buttonAmountPerRow - 1) / buttonAmountPerRow)
+                .mapToObj(i -> taskActions.subList(i * buttonAmountPerRow, Math.min(buttonAmountPerRow * (i + 1), taskActions.size())))
+                .map(actionsRow -> convertActionsToActionButtons(task, actionsRow))
+                .collect(Collectors.toList());
+
+        return InlineKeyboardMarkup.builder().keyboard(actions).build();
     }
 
-    private InlineKeyboardButton inlineKeyboardButton(Long taskId, TaskListType taskListType) {
+    private InlineKeyboardButton inlineKeyboardButton(Long taskId, TaskAction taskAction) {
         var inlineKeyboardButton = new InlineKeyboardButton();
-        inlineKeyboardButton.setText(taskListType.name());
-        inlineKeyboardButton.setCallbackData(asJson(new TaskMovementDTO(taskId, taskListType)));
+        inlineKeyboardButton.setText(taskAction.getActionTextForButton());
+        inlineKeyboardButton.setCallbackData(asJson(new TaskMovementDTO(taskId, taskAction)));
         return inlineKeyboardButton;
+    }
+
+    private List<InlineKeyboardButton> convertActionsToActionButtons(Task task, List<TaskAction> actions) {
+        return actions.stream()
+                .map(taskAction -> inlineKeyboardButton(task.getId(), taskAction))
+                .collect(Collectors.toList());
     }
 
     @SneakyThrows

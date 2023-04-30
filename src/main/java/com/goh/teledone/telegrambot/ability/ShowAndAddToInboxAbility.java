@@ -21,12 +21,13 @@ import reactor.util.function.Tuples;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
+//todo:: split in two abilities
 @Component
-public class InboxTaskAbility extends WorkWithTaskAbility {
+public class ShowAndAddToInboxAbility extends ShowTaskListAbility {
     @NonNull
     protected ActionWrapperService actionWrapper;
 
-    public InboxTaskAbility(
+    public ShowAndAddToInboxAbility(
             @NonNull ActionWrapperService actionWrapper,
             @NonNull TaskManagerService taskManager,
             @NonNull TeledoneAbilityBot abilityBot,
@@ -78,6 +79,7 @@ public class InboxTaskAbility extends WorkWithTaskAbility {
 
         return Reply.of(action,
                 bouncerService::isAllowedToUseBot,
+                Predicate.not(isReplyToMessage()),
                 Predicate.not(isStartingWithSlash()),
                 hasText()
         );
@@ -85,7 +87,16 @@ public class InboxTaskAbility extends WorkWithTaskAbility {
 
 
     private Predicate<Update> isStartingWithSlash() {
-        return update -> update.getMessage().getText().startsWith("/");
+        return update ->  update != null
+                && update.getMessage() != null
+                && update.getMessage().getText() != null
+                && update.getMessage().getText().startsWith("/");
+    }
+
+    private Predicate<Update> isReplyToMessage() {
+        return update -> update != null
+                && update.getMessage() != null
+                && update.getMessage().isReply();
     }
     private Predicate<Update> hasText() {
         return update -> StringUtils.hasLength(update.getMessage().getText());

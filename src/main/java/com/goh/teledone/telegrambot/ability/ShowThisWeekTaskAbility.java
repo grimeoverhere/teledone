@@ -11,12 +11,12 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 
 @Component
-public class WeekTaskAbility extends WorkWithTaskAbility {
+public class ShowThisWeekTaskAbility extends ShowTaskListAbility {
 
-    public WeekTaskAbility(@NonNull TaskManagerService taskManager,
-                           @NonNull TeledoneAbilityBot abilityBot,
-                           @NonNull BouncerService bouncerService,
-                           @NonNull TaskToTelegramMessageConverter converter) {
+    public ShowThisWeekTaskAbility(@NonNull TaskManagerService taskManager,
+                                   @NonNull TeledoneAbilityBot abilityBot,
+                                   @NonNull BouncerService bouncerService,
+                                   @NonNull TaskToTelegramMessageConverter converter) {
         super(taskManager, abilityBot, bouncerService, converter);
     }
 

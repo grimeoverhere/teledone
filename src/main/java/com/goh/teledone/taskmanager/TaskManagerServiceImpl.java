@@ -25,7 +25,12 @@ import static com.goh.teledone.taskmanager.TaskListType.TODAY;
 public class TaskManagerServiceImpl implements TaskManagerService {
 
     private static final String MOVE_LOG = "Move a task with id={} from {} to {}.";
-    private static final String MOVE_TRY_LOG = "Tried to move a task with id={} from {} to {}. But there is no task with this id.";
+    private static final String MOVE_TRY_LOG = "Tried to move a task with id={} to {}. But there is no task with this id.";
+    private static final String DELETE_LOG = "Delete a task with id={} from {} list.";
+    private static final String TRIED_TO_DELETE_LOG = "Tried to Delete a task with id={}. But there is no task with this id.";
+    private static final String EDIT_TASK_LOG = "Edit a task with id={} from {} list.";
+    private static final String TRIED_TO_EDIT_TASK_LOG = "Tried to Edit a task with id={}. But there is no task with this id.";
+
 
     @NonNull
     private TeledoneAbilityBot teledoneBot;
@@ -52,8 +57,37 @@ public class TaskManagerServiceImpl implements TaskManagerService {
     }
 
     @Override
-    public void move(Long chatId, Long taskId, TaskListType taskListType) {
+    public void moveToTaskList(Long chatId, Long taskId, TaskListType taskListType) {
         moveTask(chatId, taskId, taskListType);
+    }
+
+    @Override
+    public void delete(Long chatId, Long taskId) {
+        Optional<Tuple2<TaskListType, Task>> tup = findTask(chatId, taskId);
+        if (tup.isPresent()) {
+            var from = tup.get().getT1();
+            var task = tup.get().getT2();
+            log.info(DELETE_LOG, taskId, from);
+            taskList(chatId, from).remove(task);
+            teledoneBot.db().commit();
+        } else {
+            log.info(TRIED_TO_DELETE_LOG, taskId);
+        }
+    }
+
+    @Override
+    public Optional<Tuple2<TaskListType, Task>> edit(Long chatId, Long taskId, String text) {
+        var tup = findTask(chatId, taskId);
+        if (tup.isPresent()) {
+            var from = tup.get().getT1();
+            var task = tup.get().getT2();
+            task.setTitle(text);
+            log.info(EDIT_TASK_LOG, taskId, from);
+            teledoneBot.db().commit();
+        } else {
+            log.info(TRIED_TO_EDIT_TASK_LOG, taskId);
+        }
+        return tup;
     }
 
     private void moveTask(Long chatId, Long taskId, TaskListType to) {
@@ -61,12 +95,12 @@ public class TaskManagerServiceImpl implements TaskManagerService {
         if (tup.isPresent()) {
             var from = tup.get().getT1();
             var task = tup.get().getT2();
-            log.info(MOVE_LOG, taskId, null, TODAY);
+            log.info(MOVE_LOG, taskId, from, TODAY);
             taskList(chatId, from).remove(task);
             taskList(chatId, to).add(task);
             teledoneBot.db().commit();
         } else {
-            log.info(MOVE_TRY_LOG, taskId, null, TODAY);
+            log.info(MOVE_TRY_LOG, taskId, TODAY);
         }
     }
 

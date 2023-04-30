@@ -26,7 +26,6 @@ public class TeledoneAbilityBot extends AbilityBot {
         super(botToken, botUsername, defaultBotOptions);
         this.creatorId = creatorId;
         this.logger = loggerService;
-        clearChatGRPConversations();
     }
 
     @Override
@@ -47,10 +46,6 @@ public class TeledoneAbilityBot extends AbilityBot {
 
     public File downloadFileWithId(String fileId) throws TelegramApiException {
         return sender.downloadFile(sender.execute(GetFile.builder().fileId(fileId).build()));
-    }
-
-    private void clearChatGRPConversations() {
-        db.<Long>getSet("CONVERSATIONS").clear();
     }
 
 }
