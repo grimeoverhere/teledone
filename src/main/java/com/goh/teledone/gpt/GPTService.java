@@ -29,7 +29,7 @@ public class GPTService {
 
         System.out.println("Streaming chat completion...");
         final List<ChatMessage> messages = new ArrayList<>();
-        final ChatMessage systemMessage = new ChatMessage(ChatMessageRole.SYSTEM.value(), "Please write this task according to SMART methodology:");
+        final ChatMessage systemMessage = new ChatMessage(ChatMessageRole.SYSTEM.value(), "Please rewrite the following message using the SMART methodology, but write the answer in the same language as the request and also separate the main points with a new line: ");
         messages.add(systemMessage);
         final ChatMessage userMessage = new ChatMessage(ChatMessageRole.USER.value(), text);
         messages.add(userMessage);
@@ -39,7 +39,7 @@ public class GPTService {
                 .model("gpt-4")
                 .messages(messages)
                 .n(1)
-                .maxTokens(100)
+                .maxTokens(250)
                 .logitBias(new HashMap<>())
                 .build();
 
