@@ -41,6 +41,23 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!--    ChatGPT    -->
+		<dependency>
+			<groupId>com.theokanning.openai-gpt3-java</groupId>
+			<artifactId>api</artifactId>
+			<version>0.18.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.theokanning.openai-gpt3-java</groupId>
+			<artifactId>client</artifactId>
+			<version>0.18.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.theokanning.openai-gpt3-java</groupId>
+			<artifactId>service</artifactId>
+			<version>0.18.2</version>
+		</dependency>
+
 		<!--    Better streams for Map and parallel usage    -->
 		<dependency>
 			<groupId>one.util</groupId>
@@ -83,9 +100,8 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<scope>provided</scope>
-			<!--			<version>${slf4j.version}</version>-->
-			<!--			<scope>compile</scope>-->
+			<version>${slf4j.version}</version>
+			<scope>compile</scope>
 		</dependency>
 
 
