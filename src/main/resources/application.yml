@@ -12,7 +12,7 @@ integration:
     service-access-key: ${VK_SERVICE_ACCESS_KEY:???}
     stt-poll-interval: 3000
   gpt:
-    token: ???
+    token: ${GPT_TOKEN:???}
 
 
 

@@ -27,7 +27,7 @@ public class GPTService {
     public String sendMessageToGPT(String text) {
         OpenAiService service = new OpenAiService(token, Duration.ofSeconds(30));
 
-        System.out.println("Streaming chat completion...");
+        log.info("Streaming chat completion...");
         final List<ChatMessage> messages = new ArrayList<>();
         final ChatMessage systemMessage = new ChatMessage(ChatMessageRole.SYSTEM.value(), "Please rewrite the following message using the SMART methodology, but write the answer in the same language as the request and also separate the main points with a new line: ");
         messages.add(systemMessage);
@@ -36,7 +36,7 @@ public class GPTService {
 
         ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
                 .builder()
-                .model("gpt-4")
+                .model("gpt-3.5-turbo-0613")
                 .messages(messages)
                 .n(1)
                 .maxTokens(250)

@@ -18,6 +18,7 @@
 		<logback-logstash-encoder>7.0.1</logback-logstash-encoder>
 		<logback.version>1.2.9</logback.version>
 		<jackson-bom.version>2.13.1</jackson-bom.version>
+		<openai-gpt.version>0.18.2</openai-gpt.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -45,17 +46,17 @@
 		<dependency>
 			<groupId>com.theokanning.openai-gpt3-java</groupId>
 			<artifactId>api</artifactId>
-			<version>0.18.2</version>
+			<version>${openai-gpt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.theokanning.openai-gpt3-java</groupId>
 			<artifactId>client</artifactId>
-			<version>0.18.2</version>
+			<version>${openai-gpt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.theokanning.openai-gpt3-java</groupId>
 			<artifactId>service</artifactId>
-			<version>0.18.2</version>
+			<version>${openai-gpt.version}</version>
 		</dependency>
 
 		<!--    Better streams for Map and parallel usage    -->
