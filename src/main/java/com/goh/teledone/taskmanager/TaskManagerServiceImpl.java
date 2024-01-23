@@ -41,10 +41,10 @@ public class TaskManagerServiceImpl implements TaskManagerService {
     @Override
     public Long saveInbox(Long chatId, String text) {
         var newTaskId = lastTaskId(chatId) + 1;
-        teledoneBot.db().getList("OLD_" + chatId).add(Task.builder().title(text).id(newTaskId).build());
+        //teledoneBot.db().getList("OLD_" + chatId).add(Task.builder().title(text).id(newTaskId).build());
 
-        String processedText = gptService.sendMessageToGPT(text);
-        taskList(chatId, INBOX).add(Task.builder().title(processedText).id(newTaskId).build());
+        //String processedText = gptService.sendMessageToGPT(text);
+        taskList(chatId, INBOX).add(Task.builder().title(text).id(newTaskId).build());
 
         teledoneBot.db().commit();
         return newTaskId;
