@@ -21,21 +21,43 @@ public class TaskController {
         this.managerService = managerService;
     }
 
-    @GetMapping(value = "/tasks", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<TaskDtoResponse> getTasks(/*@RequestParam(value = "category", required = false) String category,
-                                          @RequestParam(value = "id") String id*/) {
+    @GetMapping(value = "/tasks/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<TaskDtoResponse> getTasks(@PathVariable(value = "id") String id) {
         log.info("Get tasks request");
-        List<Task> inboxTasks = managerService.getTasks(570984438L, TaskListType.INBOX);
+        log.info("User telegram id = " + id);
+        Long userId = Long.valueOf(id);
+        List<Task> inboxTasks = managerService.getTasks(userId, TaskListType.INBOX);
+        List<Task> todayTasks = managerService.getTasks(userId, TaskListType.TODAY);
+        List<Task> weekTasks = managerService.getTasks(userId, TaskListType.WEEK);
+        List<Task> backlogTasks = managerService.getTasks(userId, TaskListType.BACKLOG);
+
         List<TaskDtoResponse> responseList = new ArrayList<>();
 
         inboxTasks.forEach((task) ->
                 responseList.add(new TaskDtoResponse(
                         task.getTitle(),
                         TaskListType.INBOX.name()
-                )));
+                ))
+        );
+        todayTasks.forEach((task) ->
+                responseList.add(new TaskDtoResponse(
+                        task.getTitle(),
+                        TaskListType.TODAY.name()
+                ))
+        );
+        weekTasks.forEach((task) ->
+                responseList.add(new TaskDtoResponse(
+                        task.getTitle(),
+                        TaskListType.WEEK.name()
+                ))
+        );
+        backlogTasks.forEach((task) ->
+                responseList.add(new TaskDtoResponse(
+                        task.getTitle(),
+                        TaskListType.BACKLOG.name()
+                ))
+        );
         log.info("Get tasks request. tasks: " + inboxTasks);
-        // получаем список задач по категории (inbox, today, week, backlog, done)
-        // если категория не указана, то возвращаются все задачи
         return responseList;
     }
 /*
