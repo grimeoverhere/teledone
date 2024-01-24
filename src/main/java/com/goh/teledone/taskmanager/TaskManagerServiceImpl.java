@@ -1,5 +1,6 @@
 package com.goh.teledone.taskmanager;
 
+import com.goh.teledone.gpt.GPTService;
 import com.goh.teledone.taskmanager.model.Task;
 import com.goh.teledone.telegrambot.TeledoneAbilityBot;
 import lombok.NonNull;
@@ -34,11 +35,17 @@ public class TaskManagerServiceImpl implements TaskManagerService {
 
     @NonNull
     private TeledoneAbilityBot teledoneBot;
+    @NonNull
+    private GPTService gptService;
 
     @Override
     public Long saveInbox(Long chatId, String text) {
         var newTaskId = lastTaskId(chatId) + 1;
+        //teledoneBot.db().getList("OLD_" + chatId).add(Task.builder().title(text).id(newTaskId).build());
+
+        //String processedText = gptService.sendMessageToGPT(text);
         taskList(chatId, INBOX).add(Task.builder().title(text).id(newTaskId).build());
+
         teledoneBot.db().commit();
         return newTaskId;
     }
@@ -46,7 +53,11 @@ public class TaskManagerServiceImpl implements TaskManagerService {
     @Override
     public Long saveInboxFromVoice(Long chatId, String text, String telegramFileId) {
         var newTaskId = lastTaskId(chatId) + 1;
-        taskList(chatId, INBOX).add(Task.builder().title(text).fileId(telegramFileId).id(newTaskId).build());
+        teledoneBot.db().getList("OLD_" + chatId).add(Task.builder().title(text).fileId(telegramFileId).id(newTaskId).build());
+
+        String processedText = gptService.sendMessageToGPT(text);
+        taskList(chatId, INBOX).add(Task.builder().title(processedText).fileId(telegramFileId).id(newTaskId).build());
+
         teledoneBot.db().commit();
         return newTaskId;
     }
