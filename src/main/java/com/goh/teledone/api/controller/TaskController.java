@@ -1,6 +1,6 @@
 package com.goh.teledone.api.controller;
 
-import com.goh.teledone.api.dto.TaskDtoResponse;
+import com.goh.teledone.api.dto.TaskDto;
 import com.goh.teledone.taskmanager.TaskListType;
 import com.goh.teledone.taskmanager.TaskManagerServiceImpl;
 import com.goh.teledone.taskmanager.model.Task;
@@ -20,9 +20,10 @@ public class TaskController {
     public TaskController(TaskManagerServiceImpl managerService) {
         this.managerService = managerService;
     }
+/*
 
     @GetMapping(value = "/tasks/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<TaskDtoResponse> getTasks(@PathVariable(value = "id") String id) {
+    public List<TaskDto> getTasks(@PathVariable(value = "id") String id) {
         log.info("Get tasks request");
         log.info("User telegram id = " + id);
         Long userId = Long.valueOf(id);
@@ -31,28 +32,28 @@ public class TaskController {
         List<Task> weekTasks = managerService.getTasks(userId, TaskListType.WEEK);
         List<Task> backlogTasks = managerService.getTasks(userId, TaskListType.BACKLOG);
 
-        List<TaskDtoResponse> responseList = new ArrayList<>();
+        List<TaskDto> responseList = new ArrayList<>();
 
         inboxTasks.forEach((task) ->
-                responseList.add(new TaskDtoResponse(
+                responseList.add(new TaskDto(
                         task.getTitle(),
                         TaskListType.INBOX.name()
                 ))
         );
         todayTasks.forEach((task) ->
-                responseList.add(new TaskDtoResponse(
+                responseList.add(new TaskDto(
                         task.getTitle(),
                         TaskListType.TODAY.name()
                 ))
         );
         weekTasks.forEach((task) ->
-                responseList.add(new TaskDtoResponse(
+                responseList.add(new TaskDto(
                         task.getTitle(),
                         TaskListType.WEEK.name()
                 ))
         );
         backlogTasks.forEach((task) ->
-                responseList.add(new TaskDtoResponse(
+                responseList.add(new TaskDto(
                         task.getTitle(),
                         TaskListType.BACKLOG.name()
                 ))
@@ -60,16 +61,41 @@ public class TaskController {
         log.info("Get tasks request. tasks: " + inboxTasks);
         return responseList;
     }
-/*
+*/
 
-    @PostMapping(value = "/")
-    public TaskDtoResponse addTask(@RequestBody TaskDtoRequest taskDtoRequest,
-                                    @RequestParam(value = "id") String id) {
-        // добавляем задачу в inbox
-        return null;
+    @PostMapping(value = "/tasks/{userId}")
+    public List<TaskDto> syncTasks(@RequestBody List<TaskDto> taskDtoList,
+                            @PathVariable(value = "userId") String userId) {
+        log.info("Synchronize tasks request");
+        log.info("User telegram id = " + userId);
+        Long telegramUserId = Long.valueOf(userId);
+        List<TaskDto> responseList = new ArrayList<>();
+
+        for (TaskDto task : taskDtoList) {
+            if (task.getId() == 0) {
+                Long taskId = managerService.saveInbox(telegramUserId, task.getTitle());
+                task.setId(taskId);
+            }
+
+            TaskListType type = switch (task.getType()) {
+                case "INBOX" -> TaskListType.INBOX;
+                case "TODAY" -> TaskListType.TODAY;
+                case "WEEK" -> TaskListType.WEEK;
+                default -> TaskListType.BACKLOG;
+            };
+            managerService.moveToTaskList(telegramUserId, task.getId(), type);
+
+            if (task.isDone()) {
+                managerService.moveToTaskList(telegramUserId, task.getId(), TaskListType.DONE);
+            }
+
+            responseList.add(task);
+        }
+
+        return responseList;
     }
 
-
+/*
     @PutMapping(value = "/")
     public TaskDtoResponse updateTask(@RequestBody TaskDtoRequest taskDtoRequest,
                                    @RequestParam(value = "id") String id) {
@@ -89,7 +115,6 @@ public class TaskController {
                          @RequestParam(value = "taskId") String taskId,
                            @RequestParam(value = "id") String id) {
         // перемещаем задачу в указанную категорию (inbox, today, week, backlog, done)
-    }
-*/
+    }*/
 
 }
