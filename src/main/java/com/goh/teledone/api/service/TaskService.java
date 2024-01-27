@@ -53,6 +53,23 @@ public class TaskService {
             }
         }
 
+        // check delete task by server
+        List<TaskDto> tempResponseTask = new ArrayList<>(responseList);
+        for (TaskDto responseTask : tempResponseTask) {
+            log.info("checking responseTask = " + responseTask);
+            boolean isFoundDeleted = true;
+            for (TaskDto dbTask : tasksFromDb) {
+                if (dbTask.getId().equals(responseTask.getId())) {
+                    isFoundDeleted = false;
+                    break;
+                }
+            }
+            if (isFoundDeleted) {
+                responseList.remove(responseTask);
+                log.info("Deleted redundant responseTask = " + responseTask);
+            }
+        }
+
         log.info("addAndGetTasks(), responseList = " + responseList);
 
         return responseList;
