@@ -53,10 +53,10 @@ public class TaskManagerServiceImpl implements TaskManagerService {
     @Override
     public Long saveInboxFromVoice(Long chatId, String text, String telegramFileId) {
         var newTaskId = lastTaskId(chatId) + 1;
-        teledoneBot.db().getList("OLD_" + chatId).add(Task.builder().title(text).fileId(telegramFileId).id(newTaskId).build());
+        //teledoneBot.db().getList("OLD_" + chatId).add(Task.builder().title(text).fileId(telegramFileId).id(newTaskId).build());
 
-        String processedText = gptService.sendMessageToGPT(text);
-        taskList(chatId, INBOX).add(Task.builder().title(processedText).fileId(telegramFileId).id(newTaskId).build());
+        //String processedText = gptService.sendMessageToGPT(text);
+        taskList(chatId, INBOX).add(Task.builder().title(text).fileId(telegramFileId).id(newTaskId).build());
 
         teledoneBot.db().commit();
         return newTaskId;
@@ -108,12 +108,12 @@ public class TaskManagerServiceImpl implements TaskManagerService {
         if (tup.isPresent()) {
             var from = tup.get().getT1();
             var task = tup.get().getT2();
-            log.info(MOVE_LOG, taskId, from, TODAY);
+            log.info(MOVE_LOG, taskId, from, to);
             taskList(chatId, from).remove(task);
             taskList(chatId, to).add(task);
             teledoneBot.db().commit();
         } else {
-            log.info(MOVE_TRY_LOG, taskId, TODAY);
+            log.info(MOVE_TRY_LOG, taskId, to);
         }
     }
 
