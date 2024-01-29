@@ -7,6 +7,7 @@ import com.goh.teledone.taskmanager.model.Task;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -31,13 +32,14 @@ public class TaskService {
         for (int i = 0; i < taskDtoList.size(); i++) {
             TaskDto task = taskDtoList.get(i);
             if (task.getId() == 0) {
-                Long taskId = managerService.saveInbox(userId, task.getTitle());
+                Long taskId = managerService.saveInbox(userId, task.getTitle(), task.getNotes(), LocalDateTime.parse(task.getCreateDate()));
                 task.setId(taskId);
                 moveTask(userId, task);
             }
             responseList.set(i, task);
         }
 
+        // check tasks which absent in client but there are in server
         List<TaskDto> tasksFromDb = getAllTasksFromVault(userId);
         for (TaskDto dbTask : tasksFromDb) {
             boolean isFound = false;
@@ -75,11 +77,29 @@ public class TaskService {
         return responseList;
     }
 
-    public void editAndMoveTasks(Long userId, List<TaskDto> taskDtoList) {
+    public List<TaskDto> editAndMoveTasks(Long userId, List<TaskDto> taskDtoList) {
+        List<TaskDto> responseList = new ArrayList<>(taskDtoList);
+        List<TaskDto> tasksFromDb = getAllTasksFromVault(userId);
         for (TaskDto task : taskDtoList) {
-            managerService.edit(userId, task.getId(), task.getTitle());
-            moveTask(userId, task);
+            for (TaskDto dbTask : tasksFromDb) {
+                if (Objects.equals(task.getId(), dbTask.getId())) {
+                    LocalDateTime taskDate = LocalDateTime.parse(task.getModifyDate());
+                    LocalDateTime dbTaskDate = LocalDateTime.parse(dbTask.getModifyDate());
+                    if (taskDate.isAfter(dbTaskDate)) {
+                        managerService.edit(userId, task.getId(), task.getTitle(), task.getNotes(), taskDate);
+                        moveTask(userId, task);
+                        log.info("editAndMoveTasks(), client task major = " + task);
+                    } else if (taskDate.isBefore(dbTaskDate)) {
+                        dbTask.setLocalId(task.getLocalId());
+                        responseList.remove(task);
+                        responseList.add(dbTask);
+                        log.info("editAndMoveTasks(), db task major = " + dbTask);
+                    }
+                    break;
+                }
+            }
         }
+        return responseList;
     }
 
     public void deleteTask(Long userId, Long taskId) {
@@ -99,13 +119,10 @@ public class TaskService {
             case "INBOX" -> TaskListType.INBOX;
             case "TODAY" -> TaskListType.TODAY;
             case "WEEK" -> TaskListType.WEEK;
-            default -> TaskListType.BACKLOG;
+            case "BACKLOG" -> TaskListType.BACKLOG;
+            default -> TaskListType.DONE;
         };
-        managerService.moveToTaskList(userId, task.getId(), type);
-
-        /*if (task.isDone()) {
-            managerService.moveToTaskList(userId, task.getId(), TaskListType.DONE);
-        }*/
+        managerService.moveToTaskList(userId, task.getId(), type, LocalDateTime.parse(task.getModifyDate()));
     }
 
     private List<TaskDto> getAllTasksFromVault(Long userId) {
@@ -113,7 +130,7 @@ public class TaskService {
         List<Task> todayTasks = managerService.getTasks(userId, TaskListType.TODAY);
         List<Task> weekTasks = managerService.getTasks(userId, TaskListType.WEEK);
         List<Task> backlogTasks = managerService.getTasks(userId, TaskListType.BACKLOG);
-        //List<Task> doneTasks = managerService.getTasks(userId, TaskListType.DONE);
+        List<Task> doneTasks = managerService.getTasks(userId, TaskListType.DONE);
 
         List<TaskDto> responseList = new ArrayList<>();
 
@@ -121,6 +138,7 @@ public class TaskService {
         mergeTaskLists(responseList, todayTasks, TaskListType.TODAY);
         mergeTaskLists(responseList, weekTasks, TaskListType.WEEK);
         mergeTaskLists(responseList, backlogTasks, TaskListType.BACKLOG);
+        mergeTaskLists(responseList, doneTasks, TaskListType.DONE);
 
         /*for (Task doneTask : doneTasks) {
             for (int j = 0; j < responseList.size(); j++) {
@@ -142,7 +160,10 @@ public class TaskService {
                 responseList.add(new TaskDto(
                         task.getId(),
                         null,
+                        task.getCreateDate().toString(),
+                        task.getModifyDate().toString(),
                         task.getTitle(),
+                        task.getNotes(),
                         type.name(),
                         task.isDone()
                 ))

@@ -72,10 +72,10 @@ public class TaskController {
     }
 
     @PutMapping(value = "/tasks/{userId}")
-    public void updateTasks(@RequestBody List<TaskDto> taskDtoList,
+    public List<TaskDto> updateTasks(@RequestBody List<TaskDto> taskDtoList,
                                       @PathVariable(value = "userId") String userId) {
         Long telegramUserId = Long.valueOf(userId);
-        taskService.editAndMoveTasks(telegramUserId, taskDtoList);
+        return taskService.editAndMoveTasks(telegramUserId, taskDtoList);
     }
 
     @DeleteMapping(value = "/tasks/{userId}/{taskId}")
