@@ -69,7 +69,7 @@ public class ShowAndAddToInboxAbility extends ShowTaskListAbility {
         BiConsumer<BaseAbilityBot, Update> action = (bot, upd) -> Mono.just(upd)
                 .publishOn(Schedulers.boundedElastic())
                 .map(update -> taskManager.saveInbox(AbilityUtils.getChatId(update), update.getMessage().getText(),
-                        null, LocalDateTime.now()))
+                        "", LocalDateTime.now()))
                 .map(taskId -> {
                     SendMessage sendMessage = new SendMessage();
                     sendMessage.setChatId(AbilityUtils.getChatId(upd));
