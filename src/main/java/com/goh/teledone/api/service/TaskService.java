@@ -7,7 +7,7 @@ import com.goh.teledone.taskmanager.model.Task;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -32,7 +32,7 @@ public class TaskService {
         for (int i = 0; i < taskDtoList.size(); i++) {
             TaskDto task = taskDtoList.get(i);
             if (task.getId() == 0) {
-                Long taskId = managerService.saveInbox(userId, task.getTitle(), task.getNotes(), LocalDateTime.parse(task.getCreateDate()));
+                Long taskId = managerService.saveInbox(userId, task.getTitle(), task.getNotes(), ZonedDateTime.parse(task.getCreateDate()));
                 task.setId(taskId);
                 moveTask(userId, task);
             }
@@ -83,8 +83,8 @@ public class TaskService {
         for (TaskDto task : taskDtoList) {
             for (TaskDto dbTask : tasksFromDb) {
                 if (Objects.equals(task.getId(), dbTask.getId())) {
-                    LocalDateTime taskDate = LocalDateTime.parse(task.getModifyDate());
-                    LocalDateTime dbTaskDate = LocalDateTime.parse(dbTask.getModifyDate());
+                    ZonedDateTime taskDate = ZonedDateTime.parse(task.getModifyDate());
+                    ZonedDateTime dbTaskDate = ZonedDateTime.parse(dbTask.getModifyDate());
                     if (taskDate.isAfter(dbTaskDate)) {
                         managerService.edit(userId, task.getId(), task.getTitle(), task.getNotes(), taskDate);
                         moveTask(userId, task);
@@ -122,7 +122,7 @@ public class TaskService {
             case "BACKLOG" -> TaskListType.BACKLOG;
             default -> TaskListType.DONE;
         };
-        managerService.moveToTaskList(userId, task.getId(), type, LocalDateTime.parse(task.getModifyDate()));
+        managerService.moveToTaskList(userId, task.getId(), type, ZonedDateTime.parse(task.getModifyDate()));
     }
 
     private List<TaskDto> getAllTasksFromVault(Long userId) {

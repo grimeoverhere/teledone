@@ -24,6 +24,9 @@ import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
@@ -58,12 +61,11 @@ public class HandleTaskCallbackQueryAbility implements AbilityExtension {
                     return new CallbackProperties(callbackQuery, taskMovementDTO);
                 })
                 .doOnNext(prop -> {
-                    LocalDateTime modifiedDate = LocalDateTime.now();
                     switch (prop.taskMovementDTO().taskAction()) {
-                        case MOVE_TODAY -> taskManager.moveToTaskList(AbilityUtils.getChatId(upd), prop.taskMovementDTO().taskId(), TaskListType.TODAY, modifiedDate);
-                        case MOVE_TO_THIS_WEEK -> taskManager.moveToTaskList(AbilityUtils.getChatId(upd), prop.taskMovementDTO().taskId(), TaskListType.WEEK, modifiedDate);
-                        case MOVE_TO_BACKLOG -> taskManager.moveToTaskList(AbilityUtils.getChatId(upd), prop.taskMovementDTO().taskId(), TaskListType.BACKLOG, modifiedDate);
-                        case MARK_DONE -> taskManager.moveToTaskList(AbilityUtils.getChatId(upd), prop.taskMovementDTO().taskId(), TaskListType.DONE, modifiedDate);
+                        case MOVE_TODAY -> taskManager.moveToTaskList(AbilityUtils.getChatId(upd), prop.taskMovementDTO().taskId(), TaskListType.TODAY, ZonedDateTime.now());
+                        case MOVE_TO_THIS_WEEK -> taskManager.moveToTaskList(AbilityUtils.getChatId(upd), prop.taskMovementDTO().taskId(), TaskListType.WEEK, ZonedDateTime.now());
+                        case MOVE_TO_BACKLOG -> taskManager.moveToTaskList(AbilityUtils.getChatId(upd), prop.taskMovementDTO().taskId(), TaskListType.BACKLOG, ZonedDateTime.now());
+                        case MARK_DONE -> taskManager.moveToTaskList(AbilityUtils.getChatId(upd), prop.taskMovementDTO().taskId(), TaskListType.DONE, ZonedDateTime.now());
                         case EDIT -> {
                             //TODO
 //                            taskManager.moveToTaskList(AbilityUtils.getChatId(upd), prop.taskMovementDTO().taskId(), TaskListType.DONE);

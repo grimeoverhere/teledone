@@ -13,13 +13,13 @@ import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.goh.teledone.taskmanager.TaskListType.INBOX;
-import static com.goh.teledone.taskmanager.TaskListType.TODAY;
+import static com.goh.teledone.taskmanager.TaskListType.*;
 
 @Slf4j
 @Service
@@ -40,7 +40,7 @@ public class TaskManagerServiceImpl implements TaskManagerService {
     private GPTService gptService;
 
     @Override
-    public Long saveInbox(Long chatId, String text, String notes, LocalDateTime createTime) {
+    public Long saveInbox(Long chatId, String text, String notes, ZonedDateTime createTime) {
         var newTaskId = lastTaskId(chatId) + 1;
         //teledoneBot.db().getList("OLD_" + chatId).add(Task.builder().title(text).id(newTaskId).build());
 
@@ -70,7 +70,7 @@ public class TaskManagerServiceImpl implements TaskManagerService {
     }
 
     @Override
-    public void moveToTaskList(Long chatId, Long taskId, TaskListType taskListType, LocalDateTime modifyDate) {
+    public void moveToTaskList(Long chatId, Long taskId, TaskListType taskListType, ZonedDateTime modifyDate) {
         moveTask(chatId, taskId, taskListType, modifyDate);
     }
 
@@ -89,7 +89,7 @@ public class TaskManagerServiceImpl implements TaskManagerService {
     }
 
     @Override
-    public Optional<Tuple2<TaskListType, Task>> edit(Long chatId, Long taskId, String text, String notes, LocalDateTime modifyDate) {
+    public Optional<Tuple2<TaskListType, Task>> edit(Long chatId, Long taskId, String text, String notes, ZonedDateTime modifyDate) {
         var tup = findTask(chatId, taskId);
         if (tup.isPresent()) {
             var from = tup.get().getT1();
@@ -108,7 +108,7 @@ public class TaskManagerServiceImpl implements TaskManagerService {
         return tup;
     }
 
-    private void moveTask(Long chatId, Long taskId, TaskListType to, LocalDateTime modifyDate) {
+    private void moveTask(Long chatId, Long taskId, TaskListType to, ZonedDateTime modifyDate) {
         var tup = findTask(chatId, taskId);
         if (tup.isPresent()) {
             var from = tup.get().getT1();
@@ -117,6 +117,8 @@ public class TaskManagerServiceImpl implements TaskManagerService {
             taskList(chatId, from).remove(task);
             task.setModifyDate(modifyDate);
             task.setTaskType(to.name());
+            if (to == DONE)
+                task.setDone(true);
             taskList(chatId, to).add(task);
             teledoneBot.db().commit();
         } else {

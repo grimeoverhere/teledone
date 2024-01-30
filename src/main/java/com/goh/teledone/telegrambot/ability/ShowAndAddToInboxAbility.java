@@ -19,6 +19,9 @@ import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuples;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
@@ -69,7 +72,7 @@ public class ShowAndAddToInboxAbility extends ShowTaskListAbility {
         BiConsumer<BaseAbilityBot, Update> action = (bot, upd) -> Mono.just(upd)
                 .publishOn(Schedulers.boundedElastic())
                 .map(update -> taskManager.saveInbox(AbilityUtils.getChatId(update), update.getMessage().getText(),
-                        "", LocalDateTime.now()))
+                        "", ZonedDateTime.now()))
                 .map(taskId -> {
                     SendMessage sendMessage = new SendMessage();
                     sendMessage.setChatId(AbilityUtils.getChatId(upd));
