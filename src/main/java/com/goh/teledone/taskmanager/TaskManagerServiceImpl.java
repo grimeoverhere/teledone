@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -40,7 +41,7 @@ public class TaskManagerServiceImpl implements TaskManagerService {
     private GPTService gptService;
 
     @Override
-    public Long saveInbox(Long chatId, String text, String notes, ZonedDateTime createTime) {
+    public Long saveInbox(Long chatId, String text, String notes, Instant createTime) {
         var newTaskId = lastTaskId(chatId) + 1;
         //teledoneBot.db().getList("OLD_" + chatId).add(Task.builder().title(text).id(newTaskId).build());
 
@@ -70,7 +71,7 @@ public class TaskManagerServiceImpl implements TaskManagerService {
     }
 
     @Override
-    public void moveToTaskList(Long chatId, Long taskId, TaskListType taskListType, ZonedDateTime modifyDate) {
+    public void moveToTaskList(Long chatId, Long taskId, TaskListType taskListType, Instant modifyDate) {
         moveTask(chatId, taskId, taskListType, modifyDate);
     }
 
@@ -89,7 +90,7 @@ public class TaskManagerServiceImpl implements TaskManagerService {
     }
 
     @Override
-    public Optional<Tuple2<TaskListType, Task>> edit(Long chatId, Long taskId, String text, String notes, ZonedDateTime modifyDate) {
+    public Optional<Tuple2<TaskListType, Task>> edit(Long chatId, Long taskId, String text, String notes, Instant modifyDate) {
         var tup = findTask(chatId, taskId);
         if (tup.isPresent()) {
             var from = tup.get().getT1();
@@ -108,7 +109,7 @@ public class TaskManagerServiceImpl implements TaskManagerService {
         return tup;
     }
 
-    private void moveTask(Long chatId, Long taskId, TaskListType to, ZonedDateTime modifyDate) {
+    private void moveTask(Long chatId, Long taskId, TaskListType to, Instant modifyDate) {
         var tup = findTask(chatId, taskId);
         if (tup.isPresent()) {
             var from = tup.get().getT1();

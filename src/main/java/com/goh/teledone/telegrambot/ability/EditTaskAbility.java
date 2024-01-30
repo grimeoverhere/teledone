@@ -20,6 +20,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.PostConstruct;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -67,7 +68,7 @@ public class EditTaskAbility implements AbilityExtension {
                     toDel.setChatId(AbilityUtils.getChatId(upd));
                     bot.silent().execute(toDel);
 
-                    var editedTask = taskManager.edit(AbilityUtils.getChatId(upd), taskId, upd.getMessage().getText(), null, ZonedDateTime.now()).get();
+                    var editedTask = taskManager.edit(AbilityUtils.getChatId(upd), taskId, upd.getMessage().getText(), null, Instant.now()).get();
                     SendMessage sendMessageWithEditedTask = converter.convertTaskToSendMessage(editedTask.getT2(), AbilityUtils.getChatId(upd), editedTask.getT1());
                     sendMessageWithEditedTask.setReplyToMessageId(upd.getMessage().getMessageId());
                     var execute = abilityBot.silent().execute(sendMessageWithEditedTask);

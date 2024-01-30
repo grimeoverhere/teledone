@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
@@ -15,11 +16,11 @@ import java.time.ZonedDateTime;
 @AllArgsConstructor
 public class Task implements Serializable {
     private Long id;
-    private ZonedDateTime createDate;
-    private ZonedDateTime modifyDate;
-    private ZonedDateTime dueDate;
-    private ZonedDateTime startDatetime;
-    private ZonedDateTime completionDate;
+    private Instant createDate;
+    private Instant modifyDate;
+    private Instant dueDate;
+    private Instant startDatetime;
+    private Instant completionDate;
     private String categoryId;
     private String title;
     private String taskType;
