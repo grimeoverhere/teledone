@@ -16,9 +16,9 @@ Then open project and configure file **application.yml**
 ```yaml
   integration:
   telegram:
-    bot-token: ???
-    bot-creator-id: ???
-    bot-username: ???
+    bot-token: ${TELEGRAM_BOT_TOKEN:???}
+    bot-creator-id: ${TELEGRAM_CREATOR_ID:???}
+    bot-username: ${TELEGRAM_BOT_USERNAME:???}
   vk:
     app-id: ${VK_APP_ID:???}
     client-secret: ${VK_CLIENT_SECRET:???}
@@ -60,9 +60,9 @@ Then open project and configure file **application.yml**
 ```yaml
   integration:
   telegram:
-    bot-token: ???
-    bot-creator-id: ???
-    bot-username: ???
+    bot-token: ${TELEGRAM_BOT_TOKEN:???}
+    bot-creator-id: ${TELEGRAM_CREATOR_ID:???}
+    bot-username: ${TELEGRAM_BOT_USERNAME:???}
   vk:
     app-id: ${VK_APP_ID:???}
     client-secret: ${VK_CLIENT_SECRET:???}
