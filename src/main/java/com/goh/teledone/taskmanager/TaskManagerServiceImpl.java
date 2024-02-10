@@ -12,13 +12,15 @@ import org.springframework.stereotype.Service;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.goh.teledone.taskmanager.TaskListType.INBOX;
-import static com.goh.teledone.taskmanager.TaskListType.TODAY;
+import static com.goh.teledone.taskmanager.TaskListType.*;
 
 @Slf4j
 @Service
@@ -39,12 +41,13 @@ public class TaskManagerServiceImpl implements TaskManagerService {
     private GPTService gptService;
 
     @Override
-    public Long saveInbox(Long chatId, String text) {
+    public Long saveInbox(Long chatId, String text, String notes, Instant createTime) {
         var newTaskId = lastTaskId(chatId) + 1;
         //teledoneBot.db().getList("OLD_" + chatId).add(Task.builder().title(text).id(newTaskId).build());
 
         //String processedText = gptService.sendMessageToGPT(text);
-        taskList(chatId, INBOX).add(Task.builder().title(text).id(newTaskId).build());
+        taskList(chatId, INBOX).add(Task.builder().title(text).notes(notes).id(newTaskId)
+                .createDate(createTime).modifyDate(createTime).taskType(INBOX.name()).build());
 
         teledoneBot.db().commit();
         return newTaskId;
@@ -53,10 +56,10 @@ public class TaskManagerServiceImpl implements TaskManagerService {
     @Override
     public Long saveInboxFromVoice(Long chatId, String text, String telegramFileId) {
         var newTaskId = lastTaskId(chatId) + 1;
-        teledoneBot.db().getList("OLD_" + chatId).add(Task.builder().title(text).fileId(telegramFileId).id(newTaskId).build());
+        //teledoneBot.db().getList("OLD_" + chatId).add(Task.builder().title(text).fileId(telegramFileId).id(newTaskId).build());
 
-        String processedText = gptService.sendMessageToGPT(text);
-        taskList(chatId, INBOX).add(Task.builder().title(processedText).fileId(telegramFileId).id(newTaskId).build());
+        //String processedText = gptService.sendMessageToGPT(text);
+        taskList(chatId, INBOX).add(Task.builder().title(text).fileId(telegramFileId).id(newTaskId).build());
 
         teledoneBot.db().commit();
         return newTaskId;
@@ -68,8 +71,8 @@ public class TaskManagerServiceImpl implements TaskManagerService {
     }
 
     @Override
-    public void moveToTaskList(Long chatId, Long taskId, TaskListType taskListType) {
-        moveTask(chatId, taskId, taskListType);
+    public void moveToTaskList(Long chatId, Long taskId, TaskListType taskListType, Instant modifyDate) {
+        moveTask(chatId, taskId, taskListType, modifyDate);
     }
 
     @Override
@@ -87,13 +90,16 @@ public class TaskManagerServiceImpl implements TaskManagerService {
     }
 
     @Override
-    public Optional<Tuple2<TaskListType, Task>> edit(Long chatId, Long taskId, String text) {
+    public Optional<Tuple2<TaskListType, Task>> edit(Long chatId, Long taskId, String text, String notes, Instant modifyDate) {
         var tup = findTask(chatId, taskId);
         if (tup.isPresent()) {
             var from = tup.get().getT1();
             var task = tup.get().getT2();
             taskList(chatId, from).remove(task);
             task.setTitle(text);
+            if (notes != null)
+                task.setNotes(notes);
+            task.setModifyDate(modifyDate);
             taskList(chatId, from).add(task);
             log.info(EDIT_TASK_LOG, taskId, from);
             teledoneBot.db().commit();
@@ -103,17 +109,21 @@ public class TaskManagerServiceImpl implements TaskManagerService {
         return tup;
     }
 
-    private void moveTask(Long chatId, Long taskId, TaskListType to) {
+    private void moveTask(Long chatId, Long taskId, TaskListType to, Instant modifyDate) {
         var tup = findTask(chatId, taskId);
         if (tup.isPresent()) {
             var from = tup.get().getT1();
             var task = tup.get().getT2();
-            log.info(MOVE_LOG, taskId, from, TODAY);
+            log.info(MOVE_LOG, taskId, from, to);
             taskList(chatId, from).remove(task);
+            task.setModifyDate(modifyDate);
+            task.setTaskType(to.name());
+            if (to == DONE)
+                task.setDone(true);
             taskList(chatId, to).add(task);
             teledoneBot.db().commit();
         } else {
-            log.info(MOVE_TRY_LOG, taskId, TODAY);
+            log.info(MOVE_TRY_LOG, taskId, to);
         }
     }
 

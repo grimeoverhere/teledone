@@ -11,9 +11,15 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TaskDtoResponse {
+public class TaskDto {
 
+    private Long id;
+    private String localId;
+    private String createDate;
+    private String modifyDate;
     private String title;
+    private String notes;
     private String type;
+    private boolean done;
 
 }

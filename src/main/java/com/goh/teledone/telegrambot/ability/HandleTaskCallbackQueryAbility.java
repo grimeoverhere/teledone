@@ -23,6 +23,11 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.PostConstruct;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
@@ -58,10 +63,10 @@ public class HandleTaskCallbackQueryAbility implements AbilityExtension {
                 })
                 .doOnNext(prop -> {
                     switch (prop.taskMovementDTO().taskAction()) {
-                        case MOVE_TODAY -> taskManager.moveToTaskList(AbilityUtils.getChatId(upd), prop.taskMovementDTO().taskId(), TaskListType.TODAY);
-                        case MOVE_TO_THIS_WEEK -> taskManager.moveToTaskList(AbilityUtils.getChatId(upd), prop.taskMovementDTO().taskId(), TaskListType.WEEK);
-                        case MOVE_TO_BACKLOG -> taskManager.moveToTaskList(AbilityUtils.getChatId(upd), prop.taskMovementDTO().taskId(), TaskListType.BACKLOG);
-                        case MARK_DONE -> taskManager.moveToTaskList(AbilityUtils.getChatId(upd), prop.taskMovementDTO().taskId(), TaskListType.DONE);
+                        case MOVE_TODAY -> taskManager.moveToTaskList(AbilityUtils.getChatId(upd), prop.taskMovementDTO().taskId(), TaskListType.TODAY, Instant.now());
+                        case MOVE_TO_THIS_WEEK -> taskManager.moveToTaskList(AbilityUtils.getChatId(upd), prop.taskMovementDTO().taskId(), TaskListType.WEEK, Instant.now());
+                        case MOVE_TO_BACKLOG -> taskManager.moveToTaskList(AbilityUtils.getChatId(upd), prop.taskMovementDTO().taskId(), TaskListType.BACKLOG, Instant.now());
+                        case MARK_DONE -> taskManager.moveToTaskList(AbilityUtils.getChatId(upd), prop.taskMovementDTO().taskId(), TaskListType.DONE, Instant.now());
                         case EDIT -> {
                             //TODO
 //                            taskManager.moveToTaskList(AbilityUtils.getChatId(upd), prop.taskMovementDTO().taskId(), TaskListType.DONE);
