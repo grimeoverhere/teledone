@@ -1,4 +1,4 @@
-name: Build and deploy project
+name: Check build and deploy project
 
 on:
   push:
