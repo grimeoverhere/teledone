@@ -6,62 +6,13 @@ on:
   pull_request:
     branches: [ "master" ]
   workflow_dispatch:
-    inputs:
-      logLevel:
-        description: 'Log level'
-        required: true
-        default: 'warning'
-        type: choice
-        options:
-          - info
-          - warning
-          - debug
-
-env:
-  TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-  TELEGRAM_CREATOR_ID: ${{ secrets.TELEGRAM_CREATOR_ID }}
-  TELEGRAM_BOT_USERNAME: ${{ secrets.TELEGRAM_BOT_USERNAME }}
-  VK_APP_ID: ${{ secrets.VK_APP_ID }}
-  VK_CLIENT_SECRET: ${{ secrets.VK_CLIENT_SECRET }}
-  VK_SERVICE_ACCESS_KEY: ${{ secrets.VK_SERVICE_ACCESS_KEY }}
-  GPT_TOKEN: ${{ secrets.GPT_TOKEN }}
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
-      - name: Build with Maven
-        run: mvn -B package --file pom.xml
+    uses: grimeoverhere/github-workflows/.github/workflows/build_maven_check.yml@main
+    secrets: inherit
 
   deploy:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-      - name: Build JAR
-        run: mvn -B package --file pom.xml
-
-      - name: Install SSH Key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
-      - name: Adding Known Hosts
-        run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-      - name: Deploy JAR with rsync
-        run: rsync -avz ./target/teledone-0.0.1-SNAPSHOT.jar ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/alex/tmp/
+    if: github.event_name == 'workflow_dispatch'
+    uses: grimeoverhere/github-workflows/.github/workflows/build_and_deploy.yml@main
+    secrets: inherit
